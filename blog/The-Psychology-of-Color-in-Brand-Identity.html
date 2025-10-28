@@ -601,18 +601,103 @@
                         </div>
                     </div>
 
-                    <!-- Newsletter Widget -->
-                    <div class="bg-white p-6 rounded-2xl shadow-3d fade-in">
-                        <h3 class="text-xl font-heading font-semibold mb-4 text-charcoal">Get Design Insights</h3>
-                        <p class="text-lightgray mb-4">Subscribe to receive expert design tips and creative inspiration
-                            from Oryza.</p>
-                        <form class="space-y-3">
-                            <input type="email" placeholder="Your email address"
-                                class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gold-gradient">
+                    <!-- Newsletter -->
+                    <!-- ✅ Load Supabase -->
+                    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+                    <!-- ✅ Load EmailJS SDK -->
+                    <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+
+                    <div>
+                        <h3 class="font-heading font-semibold text-lg mb-4">Stay Updated</h3>
+                        <p class="text-gray-400 mb-4">Subscribe to our newsletter for the latest updates and insights.
+                        </p>
+
+                        <form id="newsletter-form" class="flex flex-col space-y-3">
+                            <input type="email" id="email-input" placeholder="Your email" required
+                                class="px-4 py-3 rounded-lg text-charcoal focus:outline-none focus:ring-2 focus:ring-gold-gradient" />
                             <button type="submit"
-                                class="w-full bg-gold-gradient text-midnight py-3 rounded-lg font-semibold btn-3d">Subscribe</button>
+                                class="bg-gold-gradient text-midnight px-4 py-3 rounded-lg font-semibold btn-3d shadow-lg">
+                                Subscribe
+                            </button>
                         </form>
+
+                        <p id="success-message" class="hidden text-green-400 mt-2">
+                            Thank you for subscribing! Please check your inbox.
+                        </p>
                     </div>
+
+                    <script>
+                        // ✅ Initialize Supabase
+                        const SUPABASE_URL = "https://enombfjnfoifyjcafknn.supabase.co";
+                        const SUPABASE_KEY =
+                            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVub21iZmpuZm9pZnlqY2Fma25uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEyNTE5MjQsImV4cCI6MjA3NjgyNzkyNH0.e8dHODoi6iGcWmhf3HyXXHZ1JzWfUBtnxvIVOIi-XHU";
+                        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+                        // ✅ Initialize EmailJS
+                        (function () {
+                            emailjs.init("mARbee2E9Z9sGQvCy");
+                        })();
+
+                        // ✅ Handle form submission
+                        document
+                            .getElementById("newsletter-form")
+                            .addEventListener("submit", async function (e) {
+                                e.preventDefault();
+                                const email = document.getElementById("email-input").value.trim();
+                                const button = e.target.querySelector("button[type='submit']");
+                                const originalText = button.textContent;
+
+                                if (!email.includes("@")) {
+                                    alert("Please enter a valid email.");
+                                    return;
+                                }
+
+                                // Disable button while processing
+                                button.disabled = true;
+                                button.textContent = "Subscribing...";
+
+                                // Insert subscriber into Supabase
+                                const { error } = await supabase.from("subscribers").insert([{ email }]);
+
+                                if (error) {
+                                    console.error(error);
+                                    alert("Something went wrong. Try again later.");
+                                    button.disabled = false;
+                                    button.textContent = originalText;
+                                    return;
+                                }
+
+                                // ✅ Send thank-you email
+                                try {
+                                    await emailjs.send("service_r5d5a8u", "template_6ljjun3", {
+                                        to_email: email,
+                                        from_name: "Oryza Creative Agency",
+                                        subject: "Welcome to Oryza Creative Agency 🎨",
+                                        message:
+                                            "Thanks for subscribing! We’ll keep you updated with our latest creative projects.",
+                                    });
+
+                                    // Animate & show success on button
+                                    button.textContent = "🎉 Thank you! Check your inbox.";
+                                    button.classList.add("bg-green-500", "text-brown", "transition", "duration-300");
+
+                                    // Reset form after short delay
+                                    setTimeout(() => {
+                                        e.target.reset();
+                                        button.textContent = originalText;
+                                        button.classList.remove("bg-green-500", "text-brown");
+                                        button.disabled = false;
+                                    }, 4000);
+                                } catch (err) {
+                                    console.error("EmailJS error:", err);
+                                    alert("Subscription saved, but email could not be sent.");
+                                    button.disabled = false;
+                                    button.textContent = originalText;
+                                }
+                            });
+                    </script>
+
                 </aside>
             </div>
         </div>
@@ -713,13 +798,16 @@
                         <ul class="space-y-3">
                             <li><a href="#" class="text-gray-300 hover:text-gold-gradient transition-colors">Brand
                                     Identity</a></li>
-                            <li><a href="/catalog/web-design-package.html" class="text-gray-300 hover:text-gold-gradient transition-colors">Web
+                            <li><a href="/catalog/web-design-package.html"
+                                    class="text-gray-300 hover:text-gold-gradient transition-colors">Web
                                     Design</a></li>
                             <li><a href="#" class="text-gray-300 hover:text-gold-gradient transition-colors">UI/UX
                                     Design</a></li>
-                            <li><a href="/catalog/premium-social-media-pack.html" class="text-gray-300 hover:text-gold-gradient transition-colors">Social
+                            <li><a href="/catalog/premium-social-media-pack.html"
+                                    class="text-gray-300 hover:text-gold-gradient transition-colors">Social
                                     Media</a></li>
-                            <li><a href="/catalog/premium-political-campaign-social-media-kit.html" class="text-gray-300 hover:text-gold-gradient transition-colors">Political
+                            <li><a href="/catalog/premium-political-campaign-social-media-kit.html"
+                                    class="text-gray-300 hover:text-gold-gradient transition-colors">Political
                                     Branding</a></li>
                         </ul>
                     </div>
@@ -729,11 +817,14 @@
                 <div class="border-t border-gray-700 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
                     <p class="text-gray-400 mb-4 md:mb-0">© 2023 Oryza Creative Agency. All rights reserved.</p>
                     <div class="flex space-x-6">
-                        <a href="/privacy-policy.html" class="text-gray-400 hover:text-gold-gradient transition-colors text-sm">Privacy
+                        <a href="/privacy-policy.html"
+                            class="text-gray-400 hover:text-gold-gradient transition-colors text-sm">Privacy
                             Policy</a>
-                        <a href="/terms-of-services.html" class="text-gray-400 hover:text-gold-gradient transition-colors text-sm">Terms of
+                        <a href="/terms-of-services.html"
+                            class="text-gray-400 hover:text-gold-gradient transition-colors text-sm">Terms of
                             Service</a>
-                        <a href="/cookie-policy.html" class="text-gray-400 hover:text-gold-gradient transition-colors text-sm">Cookie
+                        <a href="/cookie-policy.html"
+                            class="text-gray-400 hover:text-gold-gradient transition-colors text-sm">Cookie
                             Policy</a>
                     </div>
                 </div>
@@ -791,28 +882,6 @@
                             behavior: 'smooth',
                             block: 'start'
                         });
-                    }
-                });
-            });
-
-            // Form submission handling
-            document.querySelectorAll('form').forEach(form => {
-                form.addEventListener('submit', function (e) {
-                    e.preventDefault();
-
-                    // Get the email input
-                    const emailInput = this.querySelector('input[type="email"]');
-                    if (emailInput) {
-                        const email = emailInput.value;
-
-                        // Simple validation
-                        if (email && email.includes('@')) {
-                            // Show success message
-                            alert('Thank you for subscribing! You\'ll receive design insights from Oryza soon.');
-                            emailInput.value = '';
-                        } else {
-                            alert('Please enter a valid email address.');
-                        }
                     }
                 });
             });
